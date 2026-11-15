@@ -2,6 +2,7 @@
 // Секреты (НЕ в коде): BOT_TOKEN, WEBHOOK_SECRET. База: binding DB.
 
 import APP_HTML from "./app.js";
+import LESSONS from "./lessons.js";
 
 const PACK = 20; // слов в одном наборе
 let ORIGIN = ""; // адрес воркера, нужен для кнопки мини-приложения
@@ -396,7 +397,8 @@ async function apiRoute(req, url, env) {
     const { results } = await env.DB.prepare(
       "SELECT id, source_row, hanzi, pinyin, meaning_ru, emoji FROM words ORDER BY source_row"
     ).all();
-    return new Response(JSON.stringify(results), {
+    const withLessons = results.map((w) => ({ ...w, lessons: LESSONS[hz(w.hanzi)] || [] }));
+    return new Response(JSON.stringify(withLessons), {
       headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=300" },
     });
   }

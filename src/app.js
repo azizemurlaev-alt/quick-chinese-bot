@@ -23,10 +23,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .stats{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .stats h1{margin:0;font-size:22px}
 .pill{background:var(--card);border-radius:20px;padding:6px 12px;font-weight:600;font-size:14px;box-shadow:var(--sh);margin-left:6px;white-space:nowrap}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin:0 -14px 4px;padding-left:14px;padding-right:14px;scrollbar-width:none}
+.chips{position:relative;display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin:0 -14px 4px;padding-left:14px;padding-right:14px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;padding:8px 14px;border-radius:18px;background:var(--card);font-size:14px;font-weight:600;box-shadow:var(--sh)}
 .chip.on{background:var(--accent);color:#fff}
+.sub{font-size:13px;color:var(--muted);margin:0 2px 10px;min-height:18px}
 .btn{display:block;width:100%;padding:15px;border-radius:16px;font-weight:700;font-size:16px;text-align:center;background:var(--card);box-shadow:var(--sh)}
 .btn.primary{background:var(--accent);color:#fff;box-shadow:0 4px 0 var(--accent-d)}
 .btn[disabled]{opacity:.45;pointer-events:none}
@@ -114,9 +115,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
   'use strict';
   var tg = window.Telegram && window.Telegram.WebApp;
   var app = document.getElementById('app');
-  var PACK = 20;
   var BAD_EMOJI = ['❓', '💬', '➕', '❌', '🔗', '🔢', '◐', '↔️', '📏', '📍', '🔤', '🔹'];
-  var S = { words: [], byId: {}, scores: {}, user: null, pack: 0 };
+  var S = { words: [], byId: {}, scores: {}, user: null, lesson: 0 };
 
   /* ---------- helpers ---------- */
   function add(el, c) {
@@ -181,7 +181,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
       var cnt = {};
       rows.forEach(function (w) { cnt[w.emoji] = (cnt[w.emoji] || 0) + 1; });
       S.words = rows.map(function (w) {
-        var o = { id: w.id, row: w.source_row, hz: clean(w.hanzi), py: w.pinyin, ru: w.meaning_ru, em: w.emoji || '' };
+        var o = { id: w.id, row: w.source_row, hz: clean(w.hanzi), py: w.pinyin, ru: w.meaning_ru, em: w.emoji || '', ls: w.lessons || [] };
         o.pic = !!o.em && cnt[w.emoji] === 1 && BAD_EMOJI.indexOf(w.emoji) < 0;
         S.byId[o.id] = o; return o;
       });
@@ -191,9 +191,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     });
   }
   function scope() {
-    if (!S.pack) return S.words;
-    var from = (S.pack - 1) * PACK + 1, to = S.pack * PACK;
-    return S.words.filter(function (w) { return w.row >= from && w.row <= to; });
+    if (!S.lesson) return S.words;
+    return S.words.filter(function (w) { return w.ls.indexOf(S.lesson) >= 0; });
+  }
+  function plural(n, a, b, c) {
+    var m = n % 100, d = n % 10;
+    if (m > 10 && m < 20) return c;
+    if (d === 1) return a;
+    return d >= 2 && d <= 4 ? b : c;
   }
   function bucket(w) { var s = S.scores[w.id]; return s == null ? 1 : (s >= 4 ? 3 : (s >= 2 ? 2 : 0)); }
   function pickWeak(ws, n) {
@@ -210,13 +215,17 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
   /* ---------- home ---------- */
   function home() {
     go('home');
-    var total = S.words.length, packs = Math.ceil(total / PACK);
-    var chips = h('div', { class: 'chips' });
+    var total = S.words.length, lessons = [];
+    S.words.forEach(function (w) { w.ls.forEach(function (l) { if (lessons.indexOf(l) < 0) lessons.push(l); }); });
+    lessons.sort(function (a, b) { return a - b; });
+
+    var chips = h('div', { class: 'chips' }), chipEls = [];
     function chip(label, val) {
-      chips.appendChild(h('button', { class: 'chip' + (S.pack === val ? ' on' : ''), on: { click: function () { S.pack = val; home(); } } }, label));
+      var b = h('button', { class: 'chip', on: { click: function () { S.lesson = val; update(); } } }, label);
+      b._v = val; chips.appendChild(b); chipEls.push(b);
     }
     chip('Все ' + total, 0);
-    for (var i = 1; i <= packs; i++) chip(((i - 1) * PACK + 1) + '–' + Math.min(i * PACK, total), i);
+    lessons.forEach(function (l) { chip('Урок ' + l, l); });
 
     var games = [
       ['🔤', 'Выбери слово', 'Перевод → иероглиф', function () { startQuiz('word'); }],
@@ -233,13 +242,23 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     var known = 0; for (var k in S.scores) if (S.scores[k] >= 4) known++;
     var stats = h('div', { class: 'stats' }, h('h1', {}, '你好 👋'),
       h('div', {}, S.user ? [h('span', { class: 'pill' }, '⭐ ' + S.user.xp), h('span', { class: 'pill' }, '🔥 ' + S.user.streak)] : null));
+    var info = h('div', { class: 'sub' });
+    var listBtn = h('button', { class: 'btn', on: { click: runList } });
+    function update() {
+      chipEls.forEach(function (b) { b.className = 'chip' + (b._v === S.lesson ? ' on' : ''); });
+      var n = scope().length;
+      info.textContent = S.lesson ? 'Урок ' + S.lesson + ' · ' + n + ' ' + plural(n, 'слово', 'слова', 'слов') : 'Слова всех уроков';
+      listBtn.textContent = '📚  Список иероглифов · ' + n;
+    }
     render(h('div', {},
-      stats, chips,
+      stats, chips, info,
       h('button', { class: 'btn primary', on: { click: function () { startQuiz('mix'); } } }, '▶  Практика · 10 заданий'),
-      grid,
-      h('button', { class: 'btn', on: { click: runList } }, '📚  Список иероглифов · ' + scope().length),
+      grid, listBtn,
       online() ? h('div', { class: 'note muted' }, 'Выучено слов: ' + known + ' из ' + total) : h('div', { class: 'note muted' }, 'Открыто вне Telegram: прогресс не сохраняется')
     ));
+    update();
+    var on = chips.querySelector('.on');
+    if (on) chips.scrollLeft = Math.max(0, on.offsetLeft - 70);
   }
 
   /* ---------- header & summary ---------- */
@@ -461,7 +480,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
       });
     }
     var input = h('input', { class: 'search', type: 'search', placeholder: 'Поиск: иероглиф, pinyin или перевод', on: { input: function (e) { q = norm(e.target.value.trim()); fill(); } } });
-    render(h('div', {}, header('Иероглифы', S.pack ? 'набор ' + S.pack : 'все слова'), input, count, listEl));
+    render(h('div', {}, header('Иероглифы', S.lesson ? 'урок ' + S.lesson : 'все уроки'), input, count, listEl));
     fill();
   }
   function showWord(w) {
@@ -471,6 +490,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
       h('div', { class: 'sheet' },
         h('div', { class: 'hzx' }, w.hz), h('div', { class: 'em2' }, w.em), h('div', { class: 'py2' }, w.py), h('div', { class: 'ru2' }, w.ru),
         Array.from(w.hz).length > 1 ? h('div', { class: 'parts' }, Array.from(w.hz).map(function (c) { return h('span', {}, c); })) : null,
+        w.ls.length ? h('div', { class: 'st' }, (w.ls.length > 1 ? 'Уроки: ' : 'Урок: ') + w.ls.join(', ')) : null,
         h('div', { class: 'st' }, st),
         window.speechSynthesis ? h('button', { class: 'btn', on: { click: function () { speak(w.hz); } } }, '🔊  Произнести') : null,
         h('div', { style: 'height:10px' }),
