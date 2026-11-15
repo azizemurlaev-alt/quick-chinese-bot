@@ -1,12 +1,25 @@
 // Quick Chinese — Telegram-бот на Cloudflare Workers + D1
 // Секреты (НЕ в коде): BOT_TOKEN, WEBHOOK_SECRET. База: binding DB.
 
+import APP_HTML from "./app.js";
+
 const PACK = 20; // слов в одном наборе
+let ORIGIN = ""; // адрес воркера, нужен для кнопки мини-приложения
 const INTERVAL_MIN = [10, 1440, 2880, 5760, 10080, 20160]; // по рекорду 0..5: 10 мин, 1, 2, 4, 7, 14 дней
 
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
+    ORIGIN = url.origin;
+
+    // Мини-приложение и его API
+    if (url.pathname === "/app") {
+      return new Response(APP_HTML, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" } });
+    }
+    if (url.pathname.startsWith("/api/")) {
+      try { return await apiRoute(req, url, env); }
+      catch (e) { console.error("api error", e && e.stack || e); return jsonResp({ error: "server" }, 500); }
+    }
 
     // Одноразовая регистрация вебхука: /setup?secret=WEBHOOK_SECRET
     if (url.pathname === "/setup") {
@@ -16,11 +29,16 @@ export default {
         secret_token: env.WEBHOOK_SECRET,
         allowed_updates: ["message", "callback_query"],
       });
+      await sleep(1200);
       await tg(env, "setMyCommands", {
         commands: [
           { command: "start", description: "Главное меню" },
           { command: "progress", description: "Мой прогресс" },
         ],
+      });
+      await sleep(1200);
+      await tg(env, "setChatMenuButton", {
+        menu_button: { type: "web_app", text: "Учить", web_app: { url: `${url.origin}/app` } },
       });
       return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }
@@ -39,19 +57,26 @@ export default {
 
 /* ---------- Telegram helpers ---------- */
 
-async function tg(env, method, body) {
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+async function tg(env, method, body, retried = false) {
   const r = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
   const j = await r.json();
+  if (!j.ok && j.error_code === 429 && !retried) {
+    await sleep(((j.parameters && j.parameters.retry_after) || 1) * 1000 + 300);
+    return tg(env, method, body, true);
+  }
   if (!j.ok && !String(j.description).includes("not modified")) console.error(method, j);
   return j;
 }
 
 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const btn = (text, data) => ({ text, callback_data: data });
+const hz = (s) => String(s ?? "").replace(/\*/g, ""); // убираем служебную звёздочку у некоторых слов
 const cut = (s, n) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
 // c = { chat, msg? }: если есть msg — редактируем сообщение, иначе отправляем новое
@@ -125,6 +150,7 @@ async function screenMenu(env, c, user) {
   const name = esc(user.first_name || "друг");
   const text = `你好, <b>${name}</b>! 👋\n\nЯ помогу выучить китайские слова курса HSK 1.\nВыбери, с чего начнём:`;
   return show(env, c, text, [
+    [{ text: "🎮 Мини-приложение", web_app: { url: `${ORIGIN}/app` } }],
     [btn("📚 Учить слова", "l")],
     [btn("🔁 Повторение", "q:0")],
     [btn("📊 Мой прогресс", "s")],
@@ -182,7 +208,7 @@ async function screenCard(env, c, n, i, reveal) {
       [btn("« К набору", `p:${n}`)],
     ]);
   }
-  let text = `🃏 <b>Карточка ${i + 1}/${words.length}</b>\n\n<b>${esc(w.hanzi)}</b> ${esc(w.emoji || "")}`;
+  let text = `🃏 <b>Карточка ${i + 1}/${words.length}</b>\n\n<b>${esc(hz(w.hanzi))}</b> ${esc(w.emoji || "")}`;
   let rows;
   if (reveal) {
     text += `\n${esc(w.pinyin)}\n<i>${esc(w.meaning_ru)}</i>`;
@@ -243,10 +269,10 @@ async function screenQuiz(env, c, user, n) {
   const t = Math.random() < 0.5 ? 0 : 1; // 0: иероглиф→перевод, 1: перевод→иероглиф
   const options = [w, ...distractors].sort(() => Math.random() - 0.5);
   const question = t === 0
-    ? `❓ Что означает <b>${esc(w.hanzi)}</b>?`
+    ? `❓ Что означает <b>${esc(hz(w.hanzi))}</b>?`
     : `❓ Как по-китайски: <b>${esc(w.meaning_ru)}</b>?`;
   const rows = options.map((o) => [
-    btn(t === 0 ? cut(o.meaning_ru, 45) : cut(`${o.hanzi} · ${o.pinyin}`, 45), `a:${n}:${w.id}:${o.id}:${t}`),
+    btn(t === 0 ? cut(o.meaning_ru, 45) : cut(`${hz(o.hanzi)} · ${o.pinyin}`, 45), `a:${n}:${w.id}:${o.id}:${t}`),
   ]);
   rows.push([btn("« Назад", n > 0 ? `p:${n}` : "m")]);
   return show(env, c, (n === 0 ? "🔁 <b>Повторение</b>\n\n" : "") + question, rows);
@@ -259,7 +285,7 @@ async function answerQuiz(env, c, user, n, wid, chosen, t) {
   const xp = ok ? 5 : 0;
   await record(env, user, wid, ok, xp, t === 0 ? "meaning" : "recognition");
   const head = ok ? `✅ <b>Верно!</b> +${xp} XP` : "❌ <b>Неверно</b>";
-  const text = `${head}\n\n<b>${esc(w.hanzi)}</b> ${esc(w.emoji || "")}\n${esc(w.pinyin)} — <i>${esc(w.meaning_ru)}</i>`;
+  const text = `${head}\n\n<b>${esc(hz(w.hanzi))}</b> ${esc(w.emoji || "")}\n${esc(w.pinyin)} — <i>${esc(w.meaning_ru)}</i>`;
   return show(env, c, text, [
     [btn("▶ Дальше", `q:${n}`)],
     [btn("« Назад", n > 0 ? `p:${n}` : "m")],
@@ -331,4 +357,156 @@ async function screenProgress(env, c, user) {
     [btn("🔁 Повторение", "q:0")],
     [btn("« В меню", "m")],
   ]);
+}
+
+/* ---------- Мини-приложение: API ---------- */
+
+const jsonResp = (o, status = 200) =>
+  new Response(JSON.stringify(o), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
+  });
+
+// Проверка подписи Telegram (initData), чтобы нельзя было писать прогресс за другого человека
+async function verifyInitData(initData, token) {
+  if (!initData || typeof initData !== "string") return null;
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  if (!hash) return null;
+  params.delete("hash");
+  const dcs = [...params.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([k, v]) => `${k}=${v}`).join("\n");
+  const enc = new TextEncoder();
+  const hmac = async (key, data) => {
+    const k = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    return new Uint8Array(await crypto.subtle.sign("HMAC", k, enc.encode(data)));
+  };
+  const secret = await hmac(enc.encode("WebAppData"), token);
+  const hex = [...(await hmac(secret, dcs))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  if (hex.length !== hash.length) return null;
+  let diff = 0;
+  for (let i = 0; i < hex.length; i++) diff |= hex.charCodeAt(i) ^ hash.charCodeAt(i);
+  if (diff !== 0) return null;
+  const age = Date.now() / 1000 - Number(params.get("auth_date") || 0);
+  if (!(age < 172800)) return null; // не старше 48 часов
+  try { return JSON.parse(params.get("user")); } catch { return null; }
+}
+
+async function apiRoute(req, url, env) {
+  if (url.pathname === "/api/words" && req.method === "GET") {
+    const { results } = await env.DB.prepare(
+      "SELECT id, source_row, hanzi, pinyin, meaning_ru, emoji FROM words ORDER BY source_row"
+    ).all();
+    return new Response(JSON.stringify(results), {
+      headers: { "content-type": "application/json; charset=utf-8", "cache-control": "public, max-age=300" },
+    });
+  }
+  if (req.method !== "POST") return jsonResp({ error: "method" }, 405);
+  if (Number(req.headers.get("content-length") || 0) > 20000) return jsonResp({ error: "too large" }, 413);
+
+  let body;
+  try { body = await req.json(); } catch { return jsonResp({ error: "bad json" }, 400); }
+  const tgUser = await verifyInitData(body.initData, env.BOT_TOKEN);
+  if (!tgUser || !tgUser.id) return jsonResp({ error: "unauthorized" }, 401);
+  const user = await getUser(env, tgUser);
+
+  if (url.pathname === "/api/me") {
+    const { results } = await env.DB.prepare(
+      "SELECT word_id, recognition_score s FROM user_words WHERE user_id=?"
+    ).bind(user.id).all();
+    const scores = {};
+    for (const r of results) scores[r.word_id] = r.s;
+    return jsonResp({ user: { name: user.first_name, xp: user.xp, streak: user.streak }, scores });
+  }
+
+  if (url.pathname === "/api/progress") {
+    const out = await applyProgress(env, user, body);
+    return jsonResp(out);
+  }
+  return jsonResp({ error: "not found" }, 404);
+}
+
+const GAMES = ["mix", "word", "meaning", "picture", "match", "memory", "build"];
+
+// Записать результаты раунда: оценки слов, интервалы повторения, XP, статистика дня.
+// Всё сделано в нескольких запросах (у D1 есть лимит запросов на один вызов воркера).
+async function applyProgress(env, user, body) {
+  const game = GAMES.includes(body.game) ? body.game : "app";
+  const bonus = Math.max(0, Math.min(20, parseInt(body.bonus_xp, 10) || 0));
+  const raw = Array.isArray(body.results) ? body.results.slice(0, 12) : [];
+  const items = [];
+  for (const r of raw) {
+    const id = Number(r && r.id);
+    if (Number.isInteger(id) && id > 0) items.push({ id, ok: !!r.ok });
+  }
+
+  const ids = [...new Set(items.map((r) => r.id))];
+  const state = new Map(); // id -> { score, c, e }
+  let valid = [];
+  if (ids.length) {
+    const ph = ids.map(() => "?").join(",");
+    const ex = await env.DB.prepare(`SELECT id FROM words WHERE id IN (${ph})`).bind(...ids).all();
+    valid = ex.results.map((r) => r.id);
+    const cur = await env.DB.prepare(
+      `SELECT word_id, recognition_score s FROM user_words WHERE user_id=? AND word_id IN (${ph})`
+    ).bind(user.id, ...ids).all();
+    const old = new Map(cur.results.map((r) => [r.word_id, r.s]));
+    for (const it of items) {
+      if (!valid.includes(it.id)) continue;
+      const st = state.get(it.id) || { score: old.get(it.id) ?? 0, c: 0, e: 0 };
+      if (it.ok) { st.c++; st.score = Math.min(5, st.score + 1); }
+      else { st.e++; st.score = Math.max(0, st.score - 1); }
+      state.set(it.id, st);
+    }
+  }
+
+  const good = items.filter((r) => r.ok && valid.includes(r.id)).length;
+  const total = items.filter((r) => valid.includes(r.id)).length;
+  const gained = good * 3 + bonus;
+
+  const stmts = [];
+  if (state.size) {
+    const rows = [...state.entries()];
+    const vals = rows.map(() => "(?,?,?,?,?,?,datetime('now', ?),datetime('now'))").join(",");
+    const args = [];
+    for (const [id, st] of rows) {
+      args.push(user.id, id, st.score >= 4 ? "known" : "learning", st.score, st.c, st.e, `+${INTERVAL_MIN[st.score]} minutes`);
+    }
+    stmts.push(env.DB.prepare(
+      `INSERT INTO user_words(user_id, word_id, status, recognition_score, correct_count, error_count, next_review_at, updated_at)
+       VALUES ${vals}
+       ON CONFLICT(user_id, word_id) DO UPDATE SET
+         status=excluded.status,
+         recognition_score=excluded.recognition_score,
+         correct_count=correct_count+excluded.correct_count,
+         error_count=error_count+excluded.error_count,
+         next_review_at=excluded.next_review_at,
+         updated_at=excluded.updated_at`
+    ).bind(...args));
+
+    const valid_items = items.filter((r) => valid.includes(r.id));
+    const evVals = valid_items.map(() => "(?,?,?,?)").join(",");
+    const evArgs = [];
+    for (const it of valid_items) evArgs.push(user.id, it.id, `app_${game}`, it.ok ? 1 : 0);
+    stmts.push(env.DB.prepare(
+      `INSERT INTO user_word_events(user_id, word_id, skill, is_correct) VALUES ${evVals}`
+    ).bind(...evArgs));
+  }
+  if (gained > 0 || total > 0) {
+    stmts.push(env.DB.prepare("UPDATE users SET xp = xp + ? WHERE id=?").bind(gained, user.id));
+    stmts.push(env.DB.prepare(
+      `INSERT INTO user_daily_stats(user_id, stat_date, xp_earned, answers_total, answers_correct, words_reviewed)
+       VALUES(?, date('now'), ?, ?, ?, ?)
+       ON CONFLICT(user_id, stat_date) DO UPDATE SET
+         xp_earned=xp_earned+excluded.xp_earned,
+         answers_total=answers_total+excluded.answers_total,
+         answers_correct=answers_correct+excluded.answers_correct,
+         words_reviewed=words_reviewed+excluded.words_reviewed`
+    ).bind(user.id, gained, total, good, state.size));
+  }
+  if (stmts.length) await env.DB.batch(stmts);
+
+  const u = await env.DB.prepare("SELECT xp, streak FROM users WHERE id=?").bind(user.id).first();
+  const scores = {};
+  for (const [id, st] of state) scores[id] = st.score;
+  return { gained, scores, user: { name: user.first_name, xp: u.xp, streak: u.streak } };
 }
