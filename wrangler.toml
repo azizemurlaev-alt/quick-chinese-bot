@@ -1,0 +1,8 @@
+name = "quick-chinese-bot"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ИМЯ_ВАШЕЙ_БАЗЫ"      # из команды: npx wrangler d1 list
+database_id = "ID_ВАШЕЙ_БАЗЫ"         # оттуда же (UUID)
