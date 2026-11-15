@@ -4,5 +4,5 @@ compatibility_date = "2025-01-01"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "ИМЯ_ВАШЕЙ_БАЗЫ"      # из команды: npx wrangler d1 list
-database_id = "ID_ВАШЕЙ_БАЗЫ"         # оттуда же (UUID)
+database_name = "quick-chinese-v2"      # из команды: npx wrangler d1 list
+database_id = "493a549c-2896-4072-bcb3-a7f2cacaae3e"         # оттуда же (UUID)
