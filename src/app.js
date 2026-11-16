@@ -106,6 +106,45 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .note{font-size:12.5px;text-align:center;margin-top:14px}
 .sum{background:var(--card);border-radius:20px;padding:18px;margin:16px 0;box-shadow:var(--sh)}
 .sum .sc{font-size:44px;font-weight:800}
+
+#app.hasnav{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:5;padding-bottom:env(safe-area-inset-bottom)}
+.nav .in{display:flex;max-width:560px;margin:0 auto}
+.nav button{flex:1;padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--muted)}
+.nav button .ic{font-size:21px;line-height:1;width:48px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:15px}
+.nav button.on{color:var(--accent)}.nav button.on .ic{background:var(--accent-bg)}
+.top{display:flex;align-items:center;gap:6px;margin:-8px 0 6px;padding:8px 0 10px;position:sticky;top:0;z-index:4;background:var(--bg)}
+.top .sp{flex:1}
+.lvl{display:flex;align-items:center;gap:8px;background:var(--accent-bg);color:var(--accent);font-weight:800;padding:10px 14px;border-radius:16px;font-size:16px}
+.lc{background:var(--card);border-radius:22px;padding:14px;margin-bottom:12px;box-shadow:var(--sh);border:2px solid transparent;cursor:pointer}
+.lc.cur{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-bg),var(--sh)}
+.lc .r{display:flex;gap:14px;align-items:center}
+.lc .pic{width:80px;height:80px;border-radius:16px;background:var(--accent-bg);display:grid;grid-template-columns:1fr 1fr;align-items:center;justify-items:center;font-size:25px;line-height:1;flex:none;padding:6px}
+.lc .mid{flex:1;min-width:0}
+.lc .k{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.6px}
+.lc .tt{font-size:20px;font-weight:800;line-height:1.25;margin:2px 0 3px}
+.lc .mt{font-size:13px;color:var(--muted)}
+.lc .pb{height:6px;background:var(--line);border-radius:6px;margin-top:8px;overflow:hidden}.lc .pb i{display:block;height:100%;background:var(--ok);border-radius:6px}
+.acts{display:flex;justify-content:center;gap:24px;margin:18px 0 4px}
+.circ{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.circ .b{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:29px;color:#fff;background:var(--accent);box-shadow:0 5px 0 var(--accent-d)}
+.circ.pu .b{background:#7c5cf0;box-shadow:0 5px 0 #5b3fd0}.circ.gr .b{background:#22b573;box-shadow:0 5px 0 #168a56}
+.hint{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}
+.bubble{background:var(--bg);border-radius:14px;padding:8px 12px;font-size:13px;font-weight:700}
+.hint .mas{font-size:34px}
+.btn.rev{background:var(--accent-bg);color:var(--accent);margin-bottom:14px;box-shadow:none}
+.lvrow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:14px;border-radius:14px;background:var(--bg);margin-bottom:8px;font-size:16px;text-align:left}
+.lvrow.on{outline:2px solid var(--accent)}.lvrow.off{opacity:.5}
+.sheet .q{font-size:14px;color:var(--muted);margin-bottom:12px}
+.fc{background:var(--card);border-radius:26px;padding:30px 16px;text-align:center;box-shadow:var(--sh);min-height:270px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin:6px 0 16px}
+.fc .hzz{font-size:76px;font-weight:700;line-height:1.1}.fc .emz{font-size:42px}
+.fc .pyz{font-size:24px;color:var(--accent);font-weight:700}.fc .ruz{font-size:18px;line-height:1.3}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn.good{background:var(--ok);color:#fff;box-shadow:0 4px 0 #16a34a}.btn.again{background:var(--bad-bg);color:var(--bad);box-shadow:none}
+.kp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.kp div{background:var(--card);border-radius:16px;padding:14px;box-shadow:var(--sh)}.kp b{display:block;font-size:24px}.kp span{color:var(--muted);font-size:13px}
+.lp{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:12px;margin-bottom:8px;box-shadow:var(--sh);width:100%;text-align:left}
+.lp .n{font-weight:800;min-width:66px}.lp .b2{flex:1;height:8px;background:var(--line);border-radius:8px;overflow:hidden}.lp .b2 i{display:block;height:100%;background:var(--ok)}.lp .c{color:var(--muted);font-size:13px;min-width:44px;text-align:right}
 </style>
 </head>
 <body>
@@ -116,7 +155,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
   var tg = window.Telegram && window.Telegram.WebApp;
   var app = document.getElementById('app');
   var BAD_EMOJI = ['❓', '💬', '➕', '❌', '🔗', '🔢', '◐', '↔️', '📏', '📍', '🔤', '🔹'];
-  var S = { words: [], byId: {}, scores: {}, user: null, lesson: 0 };
+  var S = { words: [], byId: {}, scores: {}, due: {}, user: null, lesson: 0, level: 1, tab: 'course', cur: 0, lw: {}, lessons: [] };
 
   /* ---------- helpers ---------- */
   function add(el, c) {
@@ -135,7 +174,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     for (var i = 2; i < arguments.length; i++) add(el, arguments[i]);
     return el;
   }
-  function render(node) { app.innerHTML = ''; app.appendChild(node); window.scrollTo(0, 0); }
+  function render(node, nav) {
+    app.innerHTML = ''; app.className = nav ? 'hasnav' : ''; app.appendChild(node);
+    if (nav) app.appendChild(navBar());
+    window.scrollTo(0, 0);
+  }
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function rand(n) { return Math.floor(Math.random() * n); }
   function clean(s) { return String(s || '').replace(/\*/g, ''); }
@@ -170,7 +213,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     return api('/api/progress', { game: game, results: results.slice(0, 12), bonus_xp: bonus || 0 })
       .then(function (r) {
         if (r.user) S.user = r.user;
-        if (r.scores) for (var k in r.scores) S.scores[k] = r.scores[k];
+        if (r.scores) for (var k in r.scores) { S.scores[k] = r.scores[k]; delete S.due[k]; }
         return r;
       }).catch(function () { return null; });
   }
@@ -181,18 +224,39 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
       var cnt = {};
       rows.forEach(function (w) { cnt[w.emoji] = (cnt[w.emoji] || 0) + 1; });
       S.words = rows.map(function (w) {
-        var o = { id: w.id, row: w.source_row, hz: clean(w.hanzi), py: w.pinyin, ru: w.meaning_ru, em: w.emoji || '', ls: w.lessons || [] };
+        var o = { id: w.id, row: w.source_row, hz: clean(w.hanzi), py: w.pinyin, ru: w.meaning_ru, em: w.emoji || '', ls: w.lessons || [], lv: w.level || 1 };
         o.pic = !!o.em && cnt[w.emoji] === 1 && BAD_EMOJI.indexOf(w.emoji) < 0;
         S.byId[o.id] = o; return o;
       });
+      recompute();
       if (online()) {
-        return api('/api/me', {}).then(function (me) { S.user = me.user; S.scores = me.scores || {}; }).catch(function () {});
+        return api('/api/me', {}).then(function (me) {
+          S.user = me.user; S.scores = me.scores || {};
+          (me.due || []).forEach(function (id) { S.due[id] = true; });
+        }).catch(function () {});
       }
-    });
+    }).then(initCur);
   }
+  function recompute() {
+    S.lw = {};
+    S.words.forEach(function (w) { if (w.lv !== S.level) return; w.ls.forEach(function (l) { (S.lw[l] = S.lw[l] || []).push(w); }); });
+    S.lessons = Object.keys(S.lw).map(Number).sort(function (a, b) { return a - b; });
+  }
+  function lstat(L) {
+    var ws = S.lw[L] || [], known = 0, started = 0;
+    ws.forEach(function (w) { var s = S.scores[w.id]; if (s != null) started++; if (s >= 4) known++; });
+    return { n: ws.length, known: known, started: started };
+  }
+  function initCur() {
+    var saved = 0;
+    try { saved = parseInt(localStorage.getItem('qc_cur_' + S.level), 10) || 0; } catch (e) {}
+    if (saved && S.lw[saved]) { S.cur = saved; return; }
+    for (var i = 0; i < S.lessons.length; i++) { var st = lstat(S.lessons[i]); if (st.known < st.n * 0.8) { S.cur = S.lessons[i]; return; } }
+    S.cur = S.lessons[S.lessons.length - 1] || 0;
+  }
+  function setCur(L) { S.cur = L; try { localStorage.setItem('qc_cur_' + S.level, String(L)); } catch (e) {} }
   function scope() {
-    if (!S.lesson) return S.words;
-    return S.words.filter(function (w) { return w.ls.indexOf(S.lesson) >= 0; });
+    return S.words.filter(function (w) { return w.lv === S.level && (!S.lesson || w.ls.indexOf(S.lesson) >= 0); });
   }
   function plural(n, a, b, c) {
     var m = n % 100, d = n % 10;
@@ -212,21 +276,92 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     return same.concat(rest).slice(0, n);
   }
 
-  /* ---------- home ---------- */
-  function home() {
-    go('home');
-    var total = S.words.length, lessons = [];
-    S.words.forEach(function (w) { w.ls.forEach(function (l) { if (lessons.indexOf(l) < 0) lessons.push(l); }); });
-    lessons.sort(function (a, b) { return a - b; });
+  /* ---------- tabs ---------- */
+  function navBar() {
+    var tabs = [['course', '🗺️', 'Курс'], ['practice', '🎮', 'Практика'], ['words', '📚', 'Слова'], ['me', '👤', 'Я']];
+    return h('div', { class: 'nav' }, h('div', { class: 'in' }, tabs.map(function (t) {
+      return h('button', { class: S.tab === t[0] ? 'on' : '', on: { click: function () { showTab(t[0]); } } }, h('span', { class: 'ic' }, t[1]), t[2]);
+    })));
+  }
+  function showTab(t) {
+    S.tab = t; go('home');
+    ({ course: tabCourse, practice: tabPractice, words: tabWords, me: tabMe })[t]();
+  }
+  function home() { showTab(S.tab); }
+  function pills() {
+    return S.user ? [h('span', { class: 'pill' }, '🔥 ' + S.user.streak), h('span', { class: 'pill' }, '⭐ ' + S.user.xp)] : null;
+  }
+  function titleRow(text) { return h('div', { class: 'stats' }, h('h1', {}, text), h('div', {}, pills())); }
+  function dueCount() { return Object.keys(S.due).length; }
 
-    var chips = h('div', { class: 'chips' }), chipEls = [];
+  function scopeBar(after) {
+    var chips = h('div', { class: 'chips' }), els = [];
     function chip(label, val) {
-      var b = h('button', { class: 'chip', on: { click: function () { S.lesson = val; update(); } } }, label);
-      b._v = val; chips.appendChild(b); chipEls.push(b);
+      var b = h('button', { class: 'chip', on: { click: function () { S.lesson = val; upd(); if (after) after(); } } }, label);
+      b._v = val; chips.appendChild(b); els.push(b);
     }
-    chip('Все ' + total, 0);
-    lessons.forEach(function (l) { chip('Урок ' + l, l); });
+    function upd() { els.forEach(function (b) { b.className = 'chip' + (b._v === S.lesson ? ' on' : ''); }); }
+    chip('Весь HSK ' + S.level, 0);
+    S.lessons.forEach(function (l) { chip('Урок ' + l, l); });
+    upd();
+    chips.sync = function () { var on = chips.querySelector('.on'); if (on) chips.scrollLeft = Math.max(0, on.offsetLeft - 70); };
+    return chips;
+  }
+  function scopeInfo() {
+    var n = scope().length;
+    return (S.lesson ? 'Урок ' + S.lesson : 'Весь HSK ' + S.level) + ' · ' + n + ' ' + plural(n, 'слово', 'слова', 'слов');
+  }
 
+  /* --- Курс --- */
+  function levelMenu() {
+    var have = {}; S.words.forEach(function (w) { have[w.lv] = (have[w.lv] || 0) + 1; });
+    var ov = h('div', { class: 'ov', on: { click: function (e) { if (e.target === ov) ov.remove(); } } },
+      h('div', { class: 'sheet' }, h('div', { class: 'q' }, 'Выбери уровень'),
+        [1, 2, 3, 4].map(function (n) {
+          var ok = !!have[n];
+          return h('button', { class: 'lvrow' + (S.level === n ? ' on' : '') + (ok ? '' : ' off'), on: { click: function () {
+            if (!ok) { toast('HSK ' + n + ' скоро появится'); return; }
+            S.level = n; S.lesson = 0; recompute(); initCur(); ov.remove(); showTab(S.tab);
+          } } }, h('b', {}, 'HSK ' + n), h('span', { class: 'muted' }, ok ? have[n] + ' слов' : 'скоро'), S.level === n ? '✓' : '');
+        }),
+        h('div', { style: 'height:4px' }),
+        h('button', { class: 'btn', on: { click: function () { ov.remove(); } } }, 'Закрыть')));
+    document.body.appendChild(ov);
+  }
+  function lessonCard(L) {
+    var st = lstat(L), ws = S.lw[L], cur = S.cur === L, em = [];
+    ws.forEach(function (w) { if (w.pic && em.length < 4) em.push(w.em); });
+    ws.forEach(function (w) { if (em.length < 4 && em.indexOf(w.em) < 0) em.push(w.em); });
+    var sample = ws.slice(0, 3).map(function (w) { return w.hz; }).join(' · ');
+    var kids = [h('div', { class: 'r' },
+      h('div', { class: 'pic' }, em.map(function (e) { return h('span', {}, e); })),
+      h('div', { class: 'mid' }, h('div', { class: 'k' }, 'УРОК ' + L), h('div', { class: 'tt' }, sample),
+        h('div', { class: 'mt' }, st.n + ' ' + plural(st.n, 'слово', 'слова', 'слов') + ' · выучено ' + st.known),
+        h('div', { class: 'pb' }, h('i', { style: 'width:' + Math.round(st.known / st.n * 100) + '%' }))))];
+    if (cur) {
+      kids.push(h('div', { class: 'acts' },
+        h('button', { class: 'circ', on: { click: function () { S.lesson = L; runLearn(L); } } }, h('span', { class: 'b' }, '📖'), 'Учить'),
+        h('button', { class: 'circ pu', on: { click: function () { S.lesson = L; startQuiz('mix'); } } }, h('span', { class: 'b' }, '🎯'), 'Практика'),
+        h('button', { class: 'circ gr', on: { click: function () { S.lesson = L; showTab('practice'); } } }, h('span', { class: 'b' }, '🎮'), 'Игры')));
+      kids.push(h('div', { class: 'hint' }, h('div', { class: 'bubble' }, 'Продолжим с урока ' + L + '!'), h('div', { class: 'mas' }, '🐼')));
+    }
+    return h('div', { class: 'lc' + (cur ? ' cur' : ''), on: { click: function () { if (S.cur !== L) { setCur(L); tabCourse(); } } } }, kids);
+  }
+  function tabCourse() {
+    var d = dueCount();
+    var top = h('div', { class: 'top' }, h('button', { class: 'lvl', on: { click: levelMenu } }, '🗺️ HSK ' + S.level + ' ▾'), h('div', { class: 'sp' }), pills());
+    var list = h('div', {}, S.lessons.map(lessonCard));
+    render(h('div', {}, top,
+      d ? h('button', { class: 'btn rev', on: { click: startReview } }, '🔁  Пора повторить · ' + d + ' ' + plural(d, 'слово', 'слова', 'слов')) : null,
+      list), true);
+    var c = app.querySelector('.lc.cur'); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'center' });
+  }
+
+  /* --- Практика --- */
+  function tabPractice() {
+    var info = h('div', { class: 'sub' }), chips;
+    function update() { info.textContent = scopeInfo(); }
+    chips = scopeBar(update);
     var games = [
       ['🔤', 'Выбери слово', 'Перевод → иероглиф', function () { startQuiz('word'); }],
       ['📖', 'Выбери перевод', 'Иероглиф → перевод', function () { startQuiz('meaning'); }],
@@ -239,31 +374,58 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     games.forEach(function (g) {
       grid.appendChild(h('button', { class: 'tile', on: { click: g[3] } }, h('div', { class: 'e' }, g[0]), h('div', { class: 't' }, g[1]), h('div', { class: 's' }, g[2])));
     });
-    var known = 0; for (var k in S.scores) if (S.scores[k] >= 4) known++;
-    var stats = h('div', { class: 'stats' }, h('h1', {}, '你好 👋'),
-      h('div', {}, S.user ? [h('span', { class: 'pill' }, '⭐ ' + S.user.xp), h('span', { class: 'pill' }, '🔥 ' + S.user.streak)] : null));
-    var info = h('div', { class: 'sub' });
-    var listBtn = h('button', { class: 'btn', on: { click: runList } });
-    function update() {
-      chipEls.forEach(function (b) { b.className = 'chip' + (b._v === S.lesson ? ' on' : ''); });
-      var n = scope().length;
-      info.textContent = S.lesson ? 'Урок ' + S.lesson + ' · ' + n + ' ' + plural(n, 'слово', 'слова', 'слов') : 'Слова всех уроков';
-      listBtn.textContent = '📚  Список иероглифов · ' + n;
+    var d = dueCount();
+    render(h('div', {}, titleRow('Практика'), chips, info,
+      h('button', { class: 'btn primary', on: { click: startEndless } }, '∞  Без остановки'),
+      h('div', { style: 'height:10px' }),
+      h('button', { class: 'btn', on: { click: function () { startQuiz('mix'); } } }, '▶  10 заданий'),
+      d ? h('div', { style: 'height:10px' }) : null,
+      d ? h('button', { class: 'btn rev', style: 'margin:0', on: { click: startReview } }, '🔁  Повторение · ' + d + ' ' + plural(d, 'слово', 'слова', 'слов')) : null,
+      grid), true);
+    update(); chips.sync();
+  }
+
+  /* --- Слова --- */
+  function tabWords() {
+    var q = '', listEl = h('div', { class: 'list' }), count = h('div', { class: 'muted', style: 'margin:0 2px 8px;font-size:13px' });
+    function fill() {
+      listEl.innerHTML = '';
+      var items = scope().filter(function (w) { return !q || norm(w.hz + ' ' + w.py + ' ' + w.ru).indexOf(q) >= 0; });
+      count.textContent = scopeInfo() + (q ? ' · найдено: ' + items.length : '');
+      items.forEach(function (w) {
+        var s = S.scores[w.id], cls = s == null ? '' : (s >= 4 ? ' k' : ' l');
+        listEl.appendChild(h('button', { class: 'row', on: { click: function () { showWord(w); } } },
+          h('div', { class: 'hzl' }, w.hz), h('div', { class: 'mid' }, h('div', { class: 'pl' }, w.py), h('div', { class: 'rl' }, w.ru)),
+          h('div', { class: 'em' }, w.em), h('div', { class: 'dot' + cls })));
+      });
     }
-    render(h('div', {},
-      stats, chips, info,
-      h('button', { class: 'btn primary', on: { click: function () { startQuiz('mix'); } } }, '▶  Практика · 10 заданий'),
-      grid, listBtn,
-      online() ? h('div', { class: 'note muted' }, 'Выучено слов: ' + known + ' из ' + total) : h('div', { class: 'note muted' }, 'Открыто вне Telegram: прогресс не сохраняется')
-    ));
-    update();
-    var on = chips.querySelector('.on');
-    if (on) chips.scrollLeft = Math.max(0, on.offsetLeft - 70);
+    var chips = scopeBar(fill);
+    var input = h('input', { class: 'search', type: 'search', placeholder: 'Поиск: иероглиф, pinyin или перевод', on: { input: function (e) { q = norm(e.target.value.trim()); fill(); } } });
+    render(h('div', {}, titleRow('Иероглифы'), chips, input, count, listEl), true);
+    fill(); chips.sync();
+  }
+
+  /* --- Я --- */
+  function tabMe() {
+    var total = S.words.filter(function (w) { return w.lv === S.level; }).length, known = 0, started = 0;
+    S.words.forEach(function (w) { if (w.lv !== S.level) return; var s = S.scores[w.id]; if (s != null) started++; if (s >= 4) known++; });
+    var kp = h('div', { class: 'kp' },
+      h('div', {}, h('b', {}, S.user ? S.user.xp : '—'), h('span', {}, 'очков XP')),
+      h('div', {}, h('b', {}, S.user ? S.user.streak : '—'), h('span', {}, 'дней подряд')),
+      h('div', {}, h('b', {}, known + ' / ' + total), h('span', {}, 'слов выучено')),
+      h('div', {}, h('b', {}, started), h('span', {}, 'слов начато')));
+    var rows = S.lessons.map(function (L) {
+      var st = lstat(L);
+      return h('button', { class: 'lp', on: { click: function () { setCur(L); showTab('course'); } } },
+        h('span', { class: 'n' }, 'Урок ' + L), h('span', { class: 'b2' }, h('i', { style: 'width:' + Math.round(st.known / st.n * 100) + '%' })), h('span', { class: 'c' }, st.known + '/' + st.n));
+    });
+    render(h('div', {}, titleRow('Мой прогресс'), kp, h('div', { class: 'sub' }, 'По урокам HSK ' + S.level), rows,
+      online() ? null : h('div', { class: 'note muted' }, 'Открыто вне Telegram: прогресс не сохраняется')), true);
   }
 
   /* ---------- header & summary ---------- */
-  function header(title, right) {
-    return h('div', { class: 'hdr' }, h('button', { class: 'x', on: { click: home } }, '✕'), h('div', { class: 'ttl' }, title), h('div', { class: 'cnt' }, right || ''));
+  function header(title, right, onClose) {
+    return h('div', { class: 'hdr' }, h('button', { class: 'x', on: { click: onClose || home } }, '✕'), h('div', { class: 'ttl' }, title), h('div', { class: 'cnt' }, right || ''));
   }
   function bar(p) { return h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(p * 100) + '%' })); }
 
@@ -306,8 +468,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     var titles = { mix: 'Практика', word: 'Выбери слово', meaning: 'Выбери перевод', picture: 'Картинка' };
     runQuiz(titles[kind], kind, qs, function () { startQuiz(kind); });
   }
-  function runQuiz(title, game, qs, again) {
-    var i = 0, sel = null, checked = false, results = [];
+  function runQuiz(title, game, qs, again, opts2) {
+    var i = 0, sel = null, checked = false, results = [], sent = 0, endless = !!(opts2 && opts2.more);
+    function flush() {
+      var rest = results.slice(sent, sent + 12); if (!rest.length) return;
+      sent += rest.length;
+      submit(game, rest);
+    }
+    function closeQuiz() { if (endless) { var n = results.length - sent; flush(); if (n > 0) toast('Сохранено: ' + results.length + ' ' + plural(results.length, 'ответ', 'ответа', 'ответов')); } home(); }
     function draw() {
       var q = qs[i], w = q.w;
       var prompt;
@@ -334,16 +502,69 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
         class: 'btn primary', disabled: !checked && sel === null,
         on: { click: function () {
           if (!checked) {
-            var ok2 = sel === q.ans; results.push({ id: w.id, ok: ok2 }); haptic(ok2 ? 'success' : 'error'); checked = true; draw();
+            var ok2 = sel === q.ans; results.push({ id: w.id, ok: ok2 }); haptic(ok2 ? 'success' : 'error'); checked = true;
+            if (endless && results.length - sent >= 10) flush();
+            draw();
           } else {
             i++; sel = null; checked = false;
-            if (i >= qs.length) finish(title, game, results, 0, again); else draw();
+            if (i >= qs.length) { if (endless) qs = qs.concat(opts2.more()); else { finish(title, game, results, 0, again); return; } }
+            draw();
           }
         } }
-      }, checked ? (i === qs.length - 1 ? 'Завершить' : 'Дальше') : 'Проверить');
-      render(h('div', {}, header(title, (i + 1) + '/' + qs.length), bar(i / qs.length), prompt, opts, fb, h('div', { class: 'foot' }, btn)));
+      }, checked ? (!endless && i === qs.length - 1 ? 'Завершить' : 'Дальше') : 'Проверить');
+      render(h('div', {}, header(title, endless ? String(i + 1) : (i + 1) + '/' + qs.length, closeQuiz), bar(endless ? (i % 10) / 10 : i / qs.length), prompt, opts, fb, h('div', { class: 'foot' }, btn)));
     }
     go('quiz'); draw();
+  }
+
+  function mixQ(w) { var ty = ['word', 'meaning']; if (w.pic) ty.push('picture'); return buildQ(ty[rand(ty.length)], w); }
+  function startEndless() {
+    var ws = scope();
+    if (!ws.length) { toast('Нет слов в выбранном уроке'); return; }
+    var recent = [];
+    function more() {
+      var pool = ws.filter(function (w) { return recent.indexOf(w.id) < 0; });
+      if (pool.length < Math.min(10, ws.length)) { pool = ws; recent = []; }
+      var batch = pickWeak(pool, 10);
+      batch.forEach(function (w) { recent.push(w.id); });
+      recent = recent.slice(-Math.min(15, Math.floor(ws.length / 2)));
+      return batch.map(mixQ);
+    }
+    runQuiz('Без остановки', 'mix', more(), startEndless, { more: more });
+  }
+  function startReview() {
+    var ws = S.words.filter(function (w) { return S.due[w.id]; });
+    if (!ws.length) { toast('Пока нечего повторять 🎉'); return; }
+    runQuiz('Повторение', 'review', pickWeak(ws, 10).map(mixQ), startReview);
+  }
+
+  /* ---------- learn (flashcards) ---------- */
+  function runLearn(L) {
+    var all = L ? (S.lw[L] || []) : scope();
+    if (!all.length) { toast('Нет слов для изучения'); return; }
+    function rank(w) { var s = S.scores[w.id]; return s == null ? 0 : (s < 2 ? 1 : (s < 4 ? 2 : 3)); }
+    var ws = shuffle(all).sort(function (a, b) { return rank(a) - rank(b); }).slice(0, 10);
+    var i = 0, flipped = false, results = [];
+    function draw() {
+      var w = ws[i];
+      var card = h('div', { class: 'fc' }, h('div', { class: 'hzz' }, w.hz), h('div', { class: 'emz' }, w.em));
+      if (flipped) {
+        card.appendChild(h('div', { class: 'pyz' }, w.py)); card.appendChild(h('div', { class: 'ruz' }, w.ru));
+        if (window.speechSynthesis) card.appendChild(h('button', { class: 'spk', on: { click: function () { speak(w.hz); } } }, '🔊 Произнести'));
+      } else card.appendChild(h('div', { class: 'muted', style: 'margin-top:6px' }, 'Вспомни перевод и произношение'));
+      var actions = flipped
+        ? h('div', { class: 'two' },
+            h('button', { class: 'btn again', on: { click: function () { next(false); } } }, '↺  Ещё раз'),
+            h('button', { class: 'btn good', on: { click: function () { next(true); } } }, '✓  Знаю'))
+        : h('button', { class: 'btn primary', on: { click: function () { flipped = true; draw(); } } }, 'Показать ответ');
+      render(h('div', {}, header('Учить' + (L ? ' · урок ' + L : ''), (i + 1) + '/' + ws.length), bar(i / ws.length), card, actions));
+    }
+    function next(ok) {
+      results.push({ id: ws[i].id, ok: ok }); haptic(ok ? 'success' : 'error');
+      i++; flipped = false;
+      if (i >= ws.length) finish('Учить' + (L ? ' · урок ' + L : ''), 'learn', results, 0, function () { runLearn(L); }); else draw();
+    }
+    go('learn'); draw();
   }
 
   /* ---------- match (pairs) ---------- */
@@ -464,25 +685,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     go('build'); setup(); draw();
   }
 
-  /* ---------- list ---------- */
-  function runList() {
-    go('list');
-    var q = '', listEl = h('div', { class: 'list' }), count = h('div', { class: 'muted', style: 'margin:0 2px 8px;font-size:13px' });
-    function fill() {
-      listEl.innerHTML = '';
-      var items = scope().filter(function (w) { return !q || norm(w.hz + ' ' + w.py + ' ' + w.ru).indexOf(q) >= 0; });
-      count.textContent = 'Найдено: ' + items.length;
-      items.forEach(function (w) {
-        var s = S.scores[w.id], cls = s == null ? '' : (s >= 4 ? ' k' : ' l');
-        listEl.appendChild(h('button', { class: 'row', on: { click: function () { showWord(w); } } },
-          h('div', { class: 'hzl' }, w.hz), h('div', { class: 'mid' }, h('div', { class: 'pl' }, w.py), h('div', { class: 'rl' }, w.ru)),
-          h('div', { class: 'em' }, w.em), h('div', { class: 'dot' + cls })));
-      });
-    }
-    var input = h('input', { class: 'search', type: 'search', placeholder: 'Поиск: иероглиф, pinyin или перевод', on: { input: function (e) { q = norm(e.target.value.trim()); fill(); } } });
-    render(h('div', {}, header('Иероглифы', S.lesson ? 'урок ' + S.lesson : 'все уроки'), input, count, listEl));
-    fill();
-  }
+  /* ---------- word detail ---------- */
   function showWord(w) {
     var s = S.scores[w.id];
     var st = s == null ? 'Новое слово' : (s >= 4 ? 'Выучено ✓' : 'В процессе: ' + s + ' из 5');
@@ -511,7 +714,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     document.documentElement.setAttribute('data-theme', 'dark');
   }
   render(h('div', { class: 'center' }, h('div', { class: 'big' }, '📚'), h('div', { class: 'muted' }, 'Загрузка…')));
-  load().then(home).catch(function () {
+  load().then(function () { showTab('course'); }).catch(function () {
     render(h('div', { class: 'center' }, h('div', { class: 'big' }, '😕'), h('h2', {}, 'Не удалось загрузить слова'), h('div', { class: 'muted' }, 'Проверьте интернет и откройте приложение снова.')));
   });
 })();

@@ -413,11 +413,12 @@ async function apiRoute(req, url, env) {
 
   if (url.pathname === "/api/me") {
     const { results } = await env.DB.prepare(
-      "SELECT word_id, recognition_score s FROM user_words WHERE user_id=?"
+      "SELECT word_id, recognition_score s, (next_review_at <= datetime('now')) AS due FROM user_words WHERE user_id=?"
     ).bind(user.id).all();
     const scores = {};
-    for (const r of results) scores[r.word_id] = r.s;
-    return jsonResp({ user: { name: user.first_name, xp: user.xp, streak: user.streak }, scores });
+    const due = [];
+    for (const r of results) { scores[r.word_id] = r.s; if (r.due) due.push(r.word_id); }
+    return jsonResp({ user: { name: user.first_name, xp: user.xp, streak: user.streak }, scores, due });
   }
 
   if (url.pathname === "/api/progress") {
@@ -427,7 +428,7 @@ async function apiRoute(req, url, env) {
   return jsonResp({ error: "not found" }, 404);
 }
 
-const GAMES = ["mix", "word", "meaning", "picture", "match", "memory", "build"];
+const GAMES = ["mix", "word", "meaning", "picture", "match", "memory", "build", "learn", "review"];
 
 // Записать результаты раунда: оценки слов, интервалы повторения, XP, статистика дня.
 // Всё сделано в нескольких запросах (у D1 есть лимит запросов на один вызов воркера).
